@@ -4,6 +4,7 @@ function [mu, phi, sigma] = gaussian_mixture_EM_alg(X, K)
     d = size(X,2);      % features
 
     % Initializing values
+    mu = X(randperm(m, K), :)
     phi = (1/K) * ones(K,1);
     sigma = cell(K,1);
     for k = 1:K
