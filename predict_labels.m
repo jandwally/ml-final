@@ -1,11 +1,19 @@
 function pred_labels=predict_labels(train_inputs,train_labels,test_inputs)
 
+[coeff,score,latent,tsquared,explained,mu] = pca(train_inputs);
+
+num_vectors = 20;
+train_inputs_dimred = score(:,1:num_vectors);
+test_center = (test_inputs - repmat(mean(test_inputs),size(test_inputs,1),1));
+test_inputs_dimred = test_center * coeff(:, 1:num_vectors);
+
 part = repmat(1:7,1,ceil(size(train_inputs,1)/7));
 part = part(1:size(train_inputs,1));
 part = part(randperm(size(train_inputs,1)));
 pred_labels = zeros(size(test_inputs,1),size(train_labels,2));
 C_vals = [0, 1e-4, 1e-3, 1e-2, 1e-1, 1];
 for f = 1:9
+%{
     min_idx = 0; min_cv_err = Inf;
     for i = 1:6
         C = C_vals(i);
@@ -34,13 +42,20 @@ for f = 1:9
             min_idx = i;
         end
     end
-    C_min = C_vals(min_idx)
-    X_train = train_inputs;
+%}
+	C_min = 0.01
+    % C_min = C_vals(min_idx)
+
+    %[A,B,r,U,V] = canoncorr(train_inputs, train_labels(:,f));
+    %r
+
+    X_train = train_inputs_dimred;
     y_train = train_labels(:,f);
-    X_test = test_inputs;
+    X_test = test_inputs_dimred;
     % setting up and training final net w optimal parameters
-    net = fitnet(10);
-    net.layers{1}.transferFcn = 'poslin';
+    net = fitnet([10 20]);
+    net.layers{1}.transferFcn = 'logsig';
+    net.layers{2}.transferFcn = 'poslin';
     net.performFcn = 'mse';
     net.performParam.regularization = C_min;
     net.trainFcn = 'trainlm';

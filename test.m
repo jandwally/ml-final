@@ -5,7 +5,7 @@ p = size(training_data, 2);
 d = size(training_labels, 2);
 
 % Get two folds to test with
-part = cross_validation(n, 10);
+part = cross_validation(n, 6);
 actual_labels = training_labels(part==1,:);
 testing_data = training_data(part==1,:);
 training_labels = training_labels(part~=1,:);
