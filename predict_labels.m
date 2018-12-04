@@ -73,6 +73,8 @@ for f = 1:d
     loss_function = 'mse';
 
     fprintf("\n\n=== Feature %d ===\n", f)
+
+%{
     neu_min = 0;
     C_min = 0;
     func_best = 0;
@@ -82,7 +84,6 @@ for f = 1:d
     part = cross_validation(size(X_train, 1), num_folds)';
 
     % For each number of neurons
-%{
     for h = 1:6
         neu = neu_vals(h);
 
