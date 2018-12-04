@@ -23,23 +23,24 @@ test_demographics = test_inputs(:,2:22);
 test_topic_freqs = test_inputs(:,23:end);
 
 %% PCA on LDA topic data
-[coeff,score,latent,tsquared,explained,mu] = pca(topic_freqs);
+[coeff,score,latent,tsquared,explained,mu] = pca(topic_freqs, 'Centered', false);
 
 % Get a sufficient number of vectors
-threshold = 95;
+threshold = 99;
 num_vectors = 1;
 for i = 1:size(coeff, 1)
-    curr_explained = sum(explained(1:i))
+    curr_explained = sum(explained(1:i));
     if (curr_explained >= threshold);
         num_vectors = i;
         break
     end
 end
+num_vectors = 36;
 fprintf('Precent explained with %d vectors: %f\n', num_vectors, sum(explained(1:num_vectors)));
 
 train_freqs_dimred = score(:,1:num_vectors);
-test_freqs_center = (test_topic_freqs - repmat(mean(test_topic_freqs),size(test_topic_freqs,1),1));
-test_freqs_dimred = test_freqs_center * coeff(:, 1:num_vectors);
+% test_freqs_center = (test_topic_freqs - repmat(mean(test_topic_freqs),size(test_topic_freqs,1),1));
+test_freqs_dimred = test_topic_freqs * coeff(:, 1:num_vectors);
 
 % Combine feature space
 train_inputs_dimred = [demographics train_freqs_dimred];
@@ -47,17 +48,18 @@ test_inputs_dimred  = [test_demographics test_freqs_dimred];
 
 pred_labels = zeros(size(test_inputs,1),size(train_labels,2));
 C_vals = [0, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1];
-neu_vals = [1 3 5 10 15 20 30];
+neu_vals = [1 3 5 10 15 20];
 
-% For summary's sake
+% Optimal hyperparameters
 d = size(train_labels,2);
 C_min_final = zeros(d,1);
 neu_min_final = zeros(d,1);
 
 %test
-
-C_min_final = [1e-1 1e-5 0.0001 0.1 0.0001 0.1 0.1 0 0]
-neu_min_final = [1 1 5 20 5 1 1 5 1]
+% C_min_final = [1e-1 1e-5 0.0001 0.1 0.0001 0.1 0.1 0 0];
+% neu_min_final = [1 1 5 20 5 1 1 5 1];
+C_min_final = [1e-5 1e-5 0.001 0.1 0.0001 1e-3 1e-4 1e-2 0];
+neu_min_final = [1 3 10 5 5 1 1 5 1];
 
 for f = 1:d
 
@@ -81,7 +83,7 @@ for f = 1:d
 
     % For each number of neurons
 %{
-    for h = 1:7
+    for h = 1:6
         neu = neu_vals(h);
 
         % For each regularization value
@@ -125,13 +127,10 @@ for f = 1:d
 %}
 
 
-%{
-    fprintf('\nOPTIMAL:\n');
-    fprintf('C=%d, neu=%d\n', C_min, neu_min);
-    C_min_final(f) = C_min
-    neu_min_final(f) = neu_min
-%}
-
+    % fprintf('\nOPTIMAL:\n');
+    % fprintf('C=%d, neu=%d\n', C_min, neu_min);
+    % C_min_final(f) = C_min
+    % neu_min_final(f) = neu_min
 
 
     %% Neural network regression
