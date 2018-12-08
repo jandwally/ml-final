@@ -35,7 +35,7 @@ for f = 1:d
     fprintf("\n\n=== Feature %d ===\n", f);
     
     numtests = 7;
-    ratios = (1:numtests)/numtests;
+    ratios = (0:numtests)*0.01/numtests;
     opt_ratio = 0;
     min_cv_err = Inf;
     num_folds = 5;
